@@ -61,7 +61,7 @@ export default function Footer() {
               Contact
             </h6>
             {[
-              { icon: "📍", text: "Avenue 13, Quartier Arhiba, Djibouti-Ville" },
+              { icon: "📍", text: "Avenue 13, Quartier 5, Djibouti-Ville" },
               { icon: "📞", text: "+253 77 00 00 00" },
               { icon: "✉️", text: "contact@bellacoiffure.dj" },
               { icon: "🕐", text: "Lun-Sam : 8h00 – 19h00" },

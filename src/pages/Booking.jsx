@@ -83,6 +83,7 @@ export default function Booking() {
   const goTo = (next) => {
     setDirection(next > step ? 1 : -1);
     setStep(next);
+    document.querySelector(".booking-panel-right")?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const validateStep1 = () => selectedService && selectedStaff;

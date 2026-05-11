@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import emailjs from "emailjs-com";
+import { sendBookingConfirmation } from "../lib/email";
 import { insertAppointment } from "../lib/db";
 import { SERVICES, SERVICE_ICONS, TIME_SLOTS } from "../constants/services";
 import { STAFF } from "../constants/staff";
@@ -124,25 +124,16 @@ export default function Booking() {
     try {
       await insertAppointment(appointmentData);
 
-      // Send email via EmailJS
-      try {
-        await emailjs.send(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-          {
-            to_name: `${form.prenom} ${form.nom}`,
-            to_email: form.email,
-            service_name: selectedService.nom,
-            coiffeur_nom: selectedStaff.nom,
-            appointment_date: formatDate(date),
-            appointment_time: time,
-            service_price: `${selectedService.prix.toLocaleString("fr-FR")} DJF`,
-          },
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-        );
-      } catch {
-        // Email failure is non-blocking
-      }
+      // Send confirmation email via Brevo (non-blocking)
+      sendBookingConfirmation({
+        prenom: form.prenom,
+        nom:    form.nom,
+        email:  form.email,
+        service: selectedService,
+        staff:   selectedStaff,
+        date,
+        time,
+      }).catch(() => {});
 
       toast.success("Rendez-vous confirmé !");
       navigate("/booking/success", {

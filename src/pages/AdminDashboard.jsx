@@ -8,6 +8,19 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+// Neon retourne DATE comme objet JS Date — on normalise en YYYY-MM-DD
+function toDateStr(val) {
+  if (!val) return "";
+  if (val instanceof Date) return val.toISOString().slice(0, 10);
+  return String(val).slice(0, 10);
+}
+
+function displayDate(val) {
+  const s = toDateStr(val);
+  if (!s) return "";
+  return new Date(s + "T00:00:00").toLocaleDateString("fr-FR");
+}
+
 const TABS = [
   { id: "dashboard", label: "Tableau de bord", icon: "📊" },
   { id: "appointments", label: "Rendez-vous", icon: "📅" },
@@ -192,16 +205,17 @@ export default function AdminDashboard() {
     return d.toISOString().slice(0, 10);
   })();
 
-  const todayAppts = appointments.filter((a) => a.appointment_date === today && a.status !== "cancelled");
-  const weekAppts = appointments.filter((a) => a.appointment_date >= startOfWeek && a.status !== "cancelled");
+  const todayAppts = appointments.filter((a) => toDateStr(a.appointment_date) === today && a.status !== "cancelled");
+  const weekAppts = appointments.filter((a) => toDateStr(a.appointment_date) >= startOfWeek && a.status !== "cancelled");
   const revenueToday = todayAppts.reduce((sum, a) => sum + a.service_price, 0);
   const revenueWeek = weekAppts.reduce((sum, a) => sum + a.service_price, 0);
 
   // Filtered appointments
   const filtered = appointments.filter((a) => {
+    const dateStr = toDateStr(a.appointment_date);
     const matchSearch = !search ||
       `${a.client_firstname} ${a.client_lastname}`.toLowerCase().includes(search.toLowerCase()) ||
-      a.appointment_date.includes(search);
+      dateStr.includes(search);
     const matchStatus = filterStatus === "all" || a.status === filterStatus;
     const matchGenre = filterGenre === "all" || a.coiffeur_genre === filterGenre;
     return matchSearch && matchStatus && matchGenre;
@@ -407,7 +421,7 @@ export default function AdminDashboard() {
                           {filtered.map((a) => (
                             <tr key={a.id}>
                               <td style={{ whiteSpace: "nowrap" }}>
-                                {new Date(a.appointment_date + "T00:00:00").toLocaleDateString("fr-FR")}
+                                {displayDate(a.appointment_date)}
                               </td>
                               <td><strong>{a.appointment_time}</strong></td>
                               <td style={{ whiteSpace: "nowrap" }}>{a.client_firstname} {a.client_lastname}</td>
